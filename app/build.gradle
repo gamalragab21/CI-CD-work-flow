@@ -1,8 +1,8 @@
 plugins {
+    id 'kotlin-kapt'
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
     id 'org.sonarqube'
-
     id 'com.google.firebase.appdistribution'
     id 'com.google.gms.google-services'
 }
@@ -11,7 +11,6 @@ plugins {
 android {
     namespace 'com.example.cicdgithubactions'
     compileSdk 33
-    buildToolsVersion "29.0.3"
 
     defaultConfig {
         applicationId "com.example.cicdgithubactions"
