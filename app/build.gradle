@@ -1,8 +1,12 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
-    id "io.gitlab.arturbosch.detekt"               // detekt STEP1 applying plugin (detekt = kotlin code's static analyser)
-    id "checkstyle"                                // checkstyle STEP1 applying plugin (checkstyle = java code's static analyser)
+    id "io.gitlab.arturbosch.detekt"
+    // detekt STEP1 applying plugin (detekt = kotlin code's static analyser)
+    id "checkstyle"
+    id 'com.google.firebase.appdistribution'
+    id 'com.google.gms.google-services'
+    // checkstyle STEP1 applying plugin (checkstyle = java code's static analyser)
 
 }
 
@@ -58,7 +62,50 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
+            ext.config = getProps("$rootDir/config/release.properties")
+            ext.config.each { p ->
+
+                if (p.key == "APPNAME") {
+                    resValue "string", "app_name", p.value
+                } else if (p.key == "APPLICATION_ID_SUFFIX") {
+                    applicationIdSuffix p.value
+                } else
+                    buildConfigField 'String', p.key, p.value
+            }
         }
+
+        staging {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
+            ext.config = getProps("$rootDir/config/staging.properties")
+            ext.config.each { p ->
+                if (p.key == "APPNAME") {
+                    resValue "string", "app_name", p.value.replace('"', '')
+                } else if (p.key == "APPLICATION_ID_SUFFIX") {
+                    applicationIdSuffix p.value
+                } else {
+                    buildConfigField 'String', p.key, p.value
+                }
+            }
+        }
+
+        debug {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+            ext.config = getProps("$rootDir/config/development.properties")
+            ext.config.each { p ->
+                if (p.key == "APPNAME") {
+                    resValue "string", "app_name", p.value
+                } else if (p.key == "APPLICATION_ID_SUFFIX") {
+                    applicationIdSuffix p.value
+                } else
+                    buildConfigField 'String', p.key, p.value
+            }
+        }
+
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -67,6 +114,12 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+}
+
+static def getProps(path) {
+    Properties props = new Properties()
+    props.load(new FileInputStream(new File(path)))
+    return props
 }
 
 dependencies {
