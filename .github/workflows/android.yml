@@ -1,3 +1,27 @@
+
+
+
+
+# .github/workflows/basic.yaml
+- name: CodeAnalysis via  detekt
+  run: ./gradlew detekt
+
+- name: Upload detekt results
+  uses: actions/upload-artifact@v2
+  with:
+    name: detekt_results
+    path:app/build/reports/detekt
+
+- name: CodeAnalysis via  checkstyle
+  run: ./gradlew checkstyle
+
+- name: Upload checkstyle results
+  uses: actions/upload-artifact@v2
+  with:
+    name: checkstyle_results
+    path: app/build/reports/checkstyle
+
+
 #.github/workflows/basic.yaml
 name: task - validate commit on master
 on:
@@ -12,24 +36,6 @@ jobs:
       packages: write
 
     steps:
-      # .github/workflows/basic.yaml
-        - name: CodeAnalysis via  detekt
-          run: ./gradlew detekt
-
-        - name: Upload detekt results
-          uses: actions/upload-artifact@v2
-          with:
-            name: detekt_results
-            path:app/build/reports/detekt
-
-        - name: CodeAnalysis via  checkstyle
-          run: ./gradlew checkstyle
-
-        - name: Upload checkstyle results
-          uses: actions/upload-artifact@v2
-          with:
-            name: checkstyle_results
-            path: app/build/reports/checkstyle
       - name: Setup actions.
         uses: actions/checkout@v2
 
