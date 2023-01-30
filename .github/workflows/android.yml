@@ -7,50 +7,23 @@ on:
   workflow_dispatch:
 
 env:
-  SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+  SLACK_APP_TOKEN: ${{ secrets.SLACK_APP_TOKEN }}
+  SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-#      - name: Build and test Android app
-#        # Add your build and test commands here
-
-      - name: Notify Slack
-        if: failure()
-        uses: slackapi/slack-github-action@v1.23.0
-        with:
-          text: 'Build failed on branch `main`: `${{ env.GITHUB_SHA }}`'
-          blocks: |
-            {
-                "type": "section",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": "Build failed on branch `main`: `${{ env.GITHUB_SHA }}`"
-                }
-            }
+      - name: Send message to Slack
         env:
-          SLACK_WEBHOOK_URL: ${{ env.SLACK_WEBHOOK_URL }}
-
-      - name: Notify Slack
-        if: success()
-        uses: slackapi/slack-github-action@v1.23.0
-        with:
-          text: 'Build succeeded on branch `main`: `${{ env.GITHUB_SHA }}`'
-          blocks: |
-            {
-                "type": "section",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": "Build succeeded on branch `main`: `${{ env.GITHUB_SHA }}`"
-                }
-            }
-        env:
-          SLACK_WEBHOOK_URL: ${{ env.SLACK_WEBHOOK_URL }}
+          MESSAGE: "New version of the Android app has been deployed."
+        run: |
+          curl -X POST -H "Content-Type: application/json; charset=utf-8" \
+               -H "Authorization: Bearer $SLACK_APP_TOKEN" \
+               -d "{\"channel\":\"$SLACK_CHANNEL_ID\",\"text\":\"$MESSAGE\"}" \
+               https://slack.com/api/chat.postMessage
+      - name: Build and deploy Android app
 
 
 
