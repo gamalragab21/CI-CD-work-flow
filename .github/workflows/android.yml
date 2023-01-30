@@ -1,219 +1,59 @@
-name: Android CI/CD
-on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
-  workflow_dispatch:
+username: GitHub-CI
+icon_url: https://octodex.github.com/images/mona-the-rivetertocat.png
 
-env:
-  SLACK_APP_TOKEN: ${{ secrets.SLACK_APP_TOKEN }}
-  SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
+pretext: Triggered via {{eventName}} by {{actor}} {{or action "action"}} {{ref}} `{{diffRef}}`
+title: GitHub Actions
+title_link: https://support.github.com
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+text: |
+  *<{{workflowRunUrl}}|Workflow _{{workflow}}_ job _{{jobName}}_ triggered by _{{eventName}}_ is _{{jobStatus}}_>* for <{{refUrl}}|`{{ref}}`>
+  {{#if description}}<{{diffUrl}}|`{{diffRef}}`> - {{description}}{{/if}}
+  {{#if payload.commits}}
+  *Commits*
+  {{#each payload.commits}}
+  <{{this.url}}|`{{truncate this.id 8}}`> - {{this.message}}
+  {{/each}}
+  {{/if}}
 
-      - name: Notify Slack
-        if: failure()
-        uses: slack/actions/send-message@v2
-        with:
-          text: 'Build failed on branch `main`: `${{ env.GITHUB_SHA }}`'
-          blocks: |
-            {
-                "type": "section",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": "Build failed on branch `main`: `${{ env.GITHUB_SHA }}`"
-                }
-            }
-        env:
-          SLACK_WEBHOOK_URL: ${{ env.SLACK_WEBHOOK_URL }}
-      - name: Notify Slack
-        if: success()
-        uses: slack/actions/send-message@v2
-        with:
-          text: 'Build succeeded on branch `main`: `${{ env.GITHUB_SHA }}`'
-          blocks: |
-            {
-                "type": "section",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": "Build succeeded on branch `main`: `${{ env.GITHUB_SHA }}`"
-                }
-            }
-        env:
-          SLACK_WEBHOOK_URL: ${{ env.SLACK_WEBHOOK_URL }}
+fallback: |-
+  [GitHub] {{workflow}} #{{runNumber}} {{jobName}} is {{jobStatus}}
 
+fields:
+  - title: Job Steps
+    value: "{{#each jobSteps}}{{icon this.outcome}} {{@key}}\n{{/each}}"
+    short: false
+  - title: Workflow
+    value: "<{{workflowUrl}}|{{workflow}}>"
+    short: true
+  - title: Git Ref
+    value: "{{ref}} ({{refType}})"
+    short: true
+  - title: Run ID
+    value: |-
+      <{{workflowRunUrl}}|{{runId}}>
+    short: true
+  - title: Run Number
+    value: "{{runNumber}}"
+    short: true
+  - title: Actor
+    value: "{{actor}}"
+    short: true
+  - title: Job Status
+    value: "{{jobStatus}}"
+    short: true
 
+footer: >-
+  <{{repositoryUrl}}|{{repositoryName}}> {{workflow}} #{{runNumber}}
 
+colors:
+  success: '#5DADE2'
+  failure: '#884EA0'
+  cancelled: '#A569BD'
+  default: '#7D3C98'
 
-
-
-
-
-
-
-
-
-
-
-#name: CI
-#on:
-#  push:
-#    branches: [ master ]
-#  pull_request:
-#    branches: [ master ]
-#  workflow_dispatch:
-#
-#
-#jobs:
-#  lint:
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Checkout the code
-#        uses: actions/checkout@v2
-#
-#      - name: Run Lint
-#        run: ./gradlew lintDebug
-#       - name: Upload html test report
-#          uses: actions/upload-artifact@v3
-#          with:
-#            name: lint.html
-#            path: app/build/reports/lint-results-debug.html
-#
-#  unit-test:
-#    needs: [ lint ]
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Checkout the code
-#        uses: actions/checkout@v2
-#
-#      - name: Run tests
-#        run: ./gradlew test
-#
-#        - name: Upload test report
-#          uses: actions/upload-artifact@v2
-#          with:
-#            name: unit_test_report
-#            path: app/build/reports/tests/testDebugUnitTest/
-#
-#    instrumentation-test:
-#      needs: [unit-test]
-#      runs-on: macos-latest
-#      steps:
-#        - name: Checkout the code
-#          uses: actions/checkout@v2
-#
-#        - name: Run espresso tests
-#          uses: reactivecircus/android-emulator-runner@v2
-#          with:
-#            api-level: 29
-#            script: ./gradlew connectedCheck
-#
-#        - name: Upload test report
-#          uses: actions/upload-artifact@v2
-#          with:
-#            name: instrumentation_test_report
-#            path: app/build/reports/androidTests/connected/
-#
-#    static-code-analysis:
-#      needs: [unit-test]
-#      runs-on: ubuntu-latest
-#      steps:
-#        - name: Checkout the code
-#          uses: actions/checkout@v2
-#
-#        - name: set up JDK 11
-#          uses: actions/setup-java@v1
-#          with:
-#            java-version: 11
-#
-#        - name: SonarCloud Scan
-#          run: ./gradlew app:sonarqube -Dsonar.login=${{ secrets.SONAR_TOKEN }}
-#          env:
-#            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#  package:
-#    needs: [ unit-test ]
-#    name: Generate APK
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Checkout the code
-#        uses: actions/checkout@v2
-#
-#      - name: set up JDK 12
-#        uses: actions/setup-java@v1
-#        with:
-#          java-version: 12
-#
-#      - name: Build debug APK
-#        run: ./gradlew assembleDebug --stacktrace
-#
-#      - name: Upload APK
-#        uses: actions/upload-artifact@v2
-#        with:
-#          name: example.apk
-#          path: app/build/outputs/apk/debug/app-debug.apk
-#  publish:
-#    name: Release FinPay-module
-#    needs: [ unit-test ]
-#    runs-on: ubuntu-latest
-#
-#    steps:
-#      - name: Checkout the code
-#        uses: actions/checkout@v3
-#
-#      - name: Setup Java JDK
-#        uses: actions/setup-java@v1
-#        with:
-#          java-version: 12
-#
-#      - name: Cache Gradle and wrapper
-#        uses: actions/cache@v3.0.4
-#        with:
-#          path: |
-#            ~/.gradle/caches
-#            ~/.gradle/wrapper
-#          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-#          restore-keys: |
-#            ${{ runner.os }}-gradle-
-#
-#      - name: Grant Permission for Gradlew to Execute
-#        run: chmod +x gradlew
-#
-#      - name: Build AAR ⚙️🛠
-#        run: bash ./gradlew :softpos-core:assemble
-#
-#      - name: Publish to GitHub Package Registry 🚀
-#        run: bash ./gradlew :softpos-core:publish
-#        env:
-#          GPR_USER: ${{ github.actor }}
-#          GPR_KEY: ${{ secrets.GITHUB_TOKEN }}
-#
-#      - name: Create Release ✅
-#        id: create_release
-#        uses: actions/create-release@v1
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#        with:
-#          tag_name: ${{ github.ref }}
-#          release_name: ${{ github.ref }}
-#          draft: false
-#          prerelease: false
-#
-#      - name: Get the version
-#        id: get_version
-#        run: echo VERSION=$(echo $GITHUB_REF | cut -d / -f 3) >> $GITHUB_OUTPUT
-#
-#      - name: Upload FinPay-module Library AAR 🗳
-#        uses: actions/upload-release-asset@v1
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#        with:
-#          upload_url: ${{ steps.create_release.outputs.upload_url }}
-#          asset_path: softpos-core/build/outputs/aar/softpos-core-release.aar
-#          asset_name: finPay-v2-core-module-${{ steps.get_version.outputs.VERSION }}-release.aar
-#          asset_content_type: application/aar
+icons:
+  success: ':white_check_mark:'
+  failure: ':grimacing:'
+  cancelled: ':x:'
+  skipped: ':heavy_minus_sign:'
+  default: ':interrobang:'
