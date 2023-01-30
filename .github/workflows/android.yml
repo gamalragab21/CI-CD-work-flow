@@ -1,12 +1,13 @@
 name: Android CI/CD
-
 on:
   push:
-    branches:
-      - main
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
 
-#env:
-#  SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+env:
+  SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
 jobs:
   build:
