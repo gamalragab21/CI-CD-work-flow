@@ -1,6 +1,15 @@
-on: push
-name: Slack Notification Demo
+name: Android CI/CD
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
 jobs:
+  build:
+    runs-on: ubuntu-latest
+
   slackNotification:
     name: Slack Notification
     runs-on: ubuntu-latest
@@ -9,8 +18,18 @@ jobs:
       - name: Slack Notification
         uses: rtCamp/action-slack-notify@v2
         env:
-          VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
-          VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+
+  name: Slack Notification
+  uses: rtCamp/action-slack-notify@v2
+  env:
+    SLACK_CHANNEL: general
+    SLACK_COLOR: ${{ job.status }} # or a specific color like 'good' or '#ff00ff'
+    SLACK_ICON: https://github.com/rtCamp.png?size=48
+    SLACK_MESSAGE: 'Post Content :rocket:'
+    SLACK_TITLE: Post Title
+    SLACK_USERNAME: rtCamp
+    SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
 
 
 
