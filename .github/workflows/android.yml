@@ -23,8 +23,6 @@ jobs:
                -H "Authorization: Bearer $SLACK_APP_TOKEN" \
                -d "{\"channel\":\"$SLACK_CHANNEL_ID\",\"text\":\"$MESSAGE\"}" \
                https://slack.com/api/chat.postMessage
-      - name: Build and deploy Android app
-
 
 
 
