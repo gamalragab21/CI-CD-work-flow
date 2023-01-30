@@ -6,6 +6,7 @@ on:
     branches: [ master ]
   workflow_dispatch:
 
+
 env:
   SLACK_APP_TOKEN: ${{ secrets.SLACK_APP_TOKEN }}
   SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
