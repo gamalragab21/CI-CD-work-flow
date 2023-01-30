@@ -1,15 +1,6 @@
-name: Android CI/CD
-on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
-  workflow_dispatch:
-
+on: push
+name: Slack Notification Demo
 jobs:
-  build:
-    runs-on: ubuntu-latest
-
   slackNotification:
     name: Slack Notification
     runs-on: ubuntu-latest
@@ -18,7 +9,8 @@ jobs:
       - name: Slack Notification
         uses: rtCamp/action-slack-notify@v2
         env:
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
+          VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}
 
 
 
