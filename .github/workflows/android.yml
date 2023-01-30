@@ -22,7 +22,7 @@ jobs:
 
       - name: Notify Slack
         if: failure()
-        uses: slack/actions/send-message@v2
+        uses: slackapi/slack-github-action@v1.23.0
         with:
           text: 'Build failed on branch `main`: `${{ env.GITHUB_SHA }}`'
           blocks: |
@@ -38,7 +38,7 @@ jobs:
 
       - name: Notify Slack
         if: success()
-        uses: slack/actions/send-message@v2
+        uses: slackapi/slack-github-action@v1.23.0
         with:
           text: 'Build succeeded on branch `main`: `${{ env.GITHUB_SHA }}`'
           blocks: |
