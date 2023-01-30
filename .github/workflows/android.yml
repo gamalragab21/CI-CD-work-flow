@@ -1,16 +1,28 @@
+name: Android CI/CD
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
 
-on: push
-name: Slack Notification Demo
+env:
+  SLACK_APP_TOKEN: ${{ secrets.SLACK_APP_TOKEN }}
+  SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
+
 jobs:
-  slackNotification:
-    name: Slack Notification
+  build:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v2
-      - name: Slack Notification
-        uses: rtCamp/action-slack-notify@v2
+      - name: Send message to Slack
         env:
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          MESSAGE: "New version of the Android app has been deployed."
+        run: |
+          curl -X POST -H "Content-Type: application/json; charset=utf-8" \
+               -H "Authorization: Bearer $SLACK_APP_TOKEN" \
+               -d "{\"channel\":\"$SLACK_CHANNEL_ID\",\"text\":\"$MESSAGE\"}" \
+               https://slack.com/api/chat.postMessage
 
 
 
