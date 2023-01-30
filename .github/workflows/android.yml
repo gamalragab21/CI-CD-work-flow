@@ -11,8 +11,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Build and test Android app
-        # Add your build and test commands here
+
       - name: Notify Slack
         if: failure()
         uses: slack/actions/send-message@v2
