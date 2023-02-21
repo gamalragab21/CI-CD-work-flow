@@ -13,20 +13,20 @@ internal class MathOperationTest{
     }
 
     @Test
-    fun `add two numbers 5,6 return 11`(){
+    fun add_two_numbers_5_6_return_11(){
         val result=mathOperation.add(5,6)
         assertThat(result).isEqualTo(11)
     }
 
 
     @Test
-    fun `sub two numbers 5,6 return 11`(){
+    fun sub_two_numbers_5_6_return_11(){
         val result=mathOperation.sub(5,6)
         assertThat(result).isEqualTo(-1)
     }
 
     @Test
-    fun `dev two numbers 36,6 return 11`(){
+    fun dev_two_numbers_36_6_return_11(){
         val result=mathOperation.dev(36,6)
         assertThat(result).isEqualTo(6)
     }
