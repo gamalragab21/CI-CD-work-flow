@@ -20,37 +20,34 @@ jobs:
           name: lint.html
           path: app/build/reports/lint-results-debug.html
 
-  unit-test:
-    needs: [ lint ]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout the code
-        uses: actions/checkout@v2
+  unit tests:
+    stage: test
+    script:
+      - ./gradlew testDebugUnitTest
+    artifacts:
+      when: always
+      reports:
+        junit: [
+          ./**/build/test-results/testDebugUnitTest/TEST-*.xml,
+        ]
 
-      - name: Run tests
-        run: ./gradlew test
+  instrumented tests:
+    stage: test
+    script:
 
-      - name: Upload test report
-        uses: actions/upload-artifact@v2
-        with:
-          name: unit_test_report
-          path: app/build/reports/tests/testDebugUnitTest/
+      # install packages needed by emulator
+      - apt-get install libx11-dev libpulse0 libgl1 libnss3 libxcomposite-dev libxcursor1 libasound2 --yes
 
-  instrumentation-test:
-    needs: [ unit-test ]
-    runs-on: macos-latest
-    steps:
-      - name: Checkout the code
-        uses: actions/checkout@v2
+      # install android sdk components and emulator
+      - sdkmanager --sdk_root=${ANDROID_SDK_ROOT} "platform-tools" "emulator" "system-images;android-${EMULATOR_IMAGE};default;armeabi-v7a"
 
-      - name: Run espresso tests
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 29
-          script: ./gradlew connectedCheck
+      # download script for emulator waiting
+      - wget --quiet --output-document=android-wait-for-emulator https://raw.githubusercontent.com/travis-ci/travis-cookbooks/0f497eb71291b52a703143c5cd63a217c8766dc9/community-cookbooks/android-sdk/files/default/android-wait-for-emulator
+      - chmod +x android-wait-for-emulator
 
-      - name: Upload test report
-        uses: actions/upload-artifact@v2
-        with:
-          name: instrumentation_test_report
-          path: app/build/reports/androidTests/connected/
+      # create virtual device named "test"
+      - echo no | avdmanager -v create avd -n test -k "system-images;android-${EMULATOR_IMAGE};default;armeabi-v7a"
+
+      # start adb server
+      - adb start-server
+
